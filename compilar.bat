@@ -1,4 +1,5 @@
 @echo off
+chcp 65001 > nul 
 echo Compilando arquivos Java...
 
 if not exist out mkdir out
