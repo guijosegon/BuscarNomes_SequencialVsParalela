@@ -12,7 +12,8 @@ public class Mensagens {
     public static final String ESCOLHA_MODO =
         "Escolha o modo de busca:\n" +
         "1 - Sequencial\n" +
-        "2 - Paralelo\n" +
+        "2 - Paralelo com ForkJoinPool\n" +
+        "3 - Paralelo com Thread manual\n" +
         "Opcao: ";
 
     public static final String OPCAO_INVALIDA = "Opcao invalida.";

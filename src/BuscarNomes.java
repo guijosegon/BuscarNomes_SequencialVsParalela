@@ -39,9 +39,8 @@ public class BuscarNomes {
                 if (Files.exists(datasetK))
                     arquivosSelecionados.addAll(Files.walk(datasetK).filter(p -> p.toString().endsWith(".txt")).toList());
             } else {
-                System.out.println("Opção inválida. Usando apenas Padrões.");
-                arquivosSelecionados.addAll(Files.walk(datasetG).filter(p -> p.toString().endsWith(".txt")).toList());
-                arquivosSelecionados.addAll(Files.walk(datasetP).filter(p -> p.toString().endsWith(".txt")).toList());
+                System.out.println(Mensagens.OPCAO_INVALIDA);
+                return;
             }
 
             arquivos = arquivosSelecionados;
@@ -55,7 +54,8 @@ public class BuscarNomes {
 
         switch (escolha) {
             case 1 -> executarSequencial(arquivos, nomeBuscado);
-            case 2 -> executarParalelo(arquivos, nomeBuscado);
+            case 2 -> executarParaleloComForkJoinPoll(arquivos, nomeBuscado);
+            case 3 -> executarParaleloComThreadsManuais(arquivos, nomeBuscado);
             default -> System.out.println(Mensagens.OPCAO_INVALIDA);
         }
     }
@@ -71,7 +71,51 @@ public class BuscarNomes {
         System.out.printf("Tempo total (sequencial): %.3f ms%n", (fim - inicio) / 1_000_000.0);
     }
 
-    private static void executarParalelo(List<Path> arquivos, String nomeBuscado) {
+    private static void executarParaleloComThreadsManuais(List<Path> arquivos, String nomeBuscado) {
+        List<TarefaBuscaThread> tarefas = new ArrayList<>();
+    
+        long inicio = System.nanoTime();
+            int tamanhoBloco = (int) Math.ceil((double) arquivos.size() / 8);
+    
+        for (int i = 0; i < arquivos.size(); i += tamanhoBloco) {
+            int fim = Math.min(i + tamanhoBloco, arquivos.size());
+            List<Path> subLista = arquivos.subList(i, fim);
+    
+            TarefaBuscaThread tarefa = new TarefaBuscaThread(subLista, nomeBuscado);
+            tarefas.add(tarefa);
+            tarefa.start();
+        }
+    
+        for (TarefaBuscaThread tarefa : tarefas) {
+            try {
+                tarefa.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    
+        long fim = System.nanoTime();
+        System.out.printf("Tempo total (paralelo com Threads manuais): %.3f ms%n", (fim - inicio) / 1_000_000.0);
+    }    
+
+    static class TarefaBuscaThread extends Thread {
+        private final List<Path> arquivos;
+        private final String nomeBuscado;
+    
+        public TarefaBuscaThread(List<Path> arquivos, String nomeBuscado) {
+            this.arquivos = arquivos;
+            this.nomeBuscado = nomeBuscado;
+        }
+    
+        @Override
+        public void run() {
+            for (Path arquivo : arquivos) {
+                buscarNomeNoArquivo(arquivo.toFile(), nomeBuscado);
+            }
+        }
+    }    
+
+    private static void executarParaleloComForkJoinPoll(List<Path> arquivos, String nomeBuscado) {
         ForkJoinPool pool = new ForkJoinPool();
         long inicio = System.nanoTime();
 
@@ -79,7 +123,7 @@ public class BuscarNomes {
         pool.invoke(tarefa);
 
         long fim = System.nanoTime();
-        System.out.printf("Tempo total (paralelo): %.3f ms%n", (fim - inicio) / 1_000_000.0);
+        System.out.printf("Tempo total (paralelo com ForkJoinPool): %.3f ms%n", (fim - inicio) / 1_000_000.0);
 
         pool.shutdown();
     }
@@ -95,7 +139,7 @@ public class BuscarNomes {
 
         @Override
         protected void compute() {
-            if (arquivos.size() <= Campos.LIMITE_ARQUIVOS_POR_TAREFA) {
+            if (arquivos.size() <= 8) {
                 for (Path arquivo : arquivos) {
                     buscarNomeNoArquivo(arquivo.toFile(), nomeBuscado);
                 }
