@@ -75,7 +75,7 @@ public class BuscarNomes {
         List<TarefaBuscaThread> tarefas = new ArrayList<>();
     
         long inicio = System.nanoTime();
-            int tamanhoBloco = (int) Math.ceil((double) arquivos.size() / 8);
+        int tamanhoBloco = (int) Math.ceil((double) arquivos.size() / 8);
     
         for (int i = 0; i < arquivos.size(); i += tamanhoBloco) {
             int fim = Math.min(i + tamanhoBloco, arquivos.size());
