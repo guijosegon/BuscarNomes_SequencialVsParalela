@@ -8,7 +8,8 @@ import java.util.concurrent.*;
 
 public class BuscarNomes {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) 
+    {
         Scanner scanner = new Scanner(System.in);
 
         System.out.print(Mensagens.DIGITE_NOME);
@@ -60,7 +61,8 @@ public class BuscarNomes {
         }
     }
 
-    private static void executarSequencial(List<Path> arquivos, String nomeBuscado) {
+    private static void executarSequencial(List<Path> arquivos, String nomeBuscado) 
+    {
         long inicio = System.nanoTime();
 
         for (Path arquivo : arquivos) {
@@ -71,7 +73,8 @@ public class BuscarNomes {
         System.out.printf("Tempo total (sequencial): %.3f ms%n", (fim - inicio) / 1_000_000.0);
     }
 
-    private static void executarParaleloComThreadsManuais(List<Path> arquivos, String nomeBuscado) {
+    private static void executarParaleloComThreadsManuais(List<Path> arquivos, String nomeBuscado) 
+    {
         List<TarefaBuscaThread> tarefas = new ArrayList<>();
     
         long inicio = System.nanoTime();
@@ -98,7 +101,8 @@ public class BuscarNomes {
         System.out.printf("Tempo total (paralelo com Threads manuais): %.3f ms%n", (fim - inicio) / 1_000_000.0);
     }    
 
-    static class TarefaBuscaThread extends Thread {
+    static class TarefaBuscaThread extends Thread 
+    {
         private final List<Path> arquivos;
         private final String nomeBuscado;
     
@@ -115,7 +119,8 @@ public class BuscarNomes {
         }
     }    
 
-    private static void executarParaleloComForkJoinPoll(List<Path> arquivos, String nomeBuscado) {
+    private static void executarParaleloComForkJoinPoll(List<Path> arquivos, String nomeBuscado) 
+    {
         ForkJoinPool pool = new ForkJoinPool();
         long inicio = System.nanoTime();
 
@@ -128,7 +133,8 @@ public class BuscarNomes {
         pool.shutdown();
     }
 
-    static class TarefaBuscaBloco extends RecursiveAction {
+    static class TarefaBuscaBloco extends RecursiveAction 
+    {
         private final List<Path> arquivos;
         private final String nomeBuscado;
 
@@ -153,7 +159,8 @@ public class BuscarNomes {
         }
     }
 
-    private static void buscarNomeNoArquivo(File arquivo, String nome) {
+    private static void buscarNomeNoArquivo(File arquivo, String nome) 
+    {
         try (BufferedReader leitor = new BufferedReader(new FileReader(arquivo))) {
             String linha;
             int numeroLinha = 1;
